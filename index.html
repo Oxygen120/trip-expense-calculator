@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Trip Expense Calculator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#00ffcc">
+
+<style>
+:root{--neon:#00ffcc;--red:#ff0044}
+*{box-sizing:border-box;font-family:Courier New,monospace}
+body{
+  margin:0;height:100vh;
+  background:radial-gradient(circle at top,#003333,#000);
+  color:var(--neon)
+}
+.container{
+  height:100%;
+  display:grid;
+  grid-template-rows:auto 1fr auto;
+  padding:15px;gap:15px
+}
+header{
+  text-align:center;font-size:26px;padding:15px;
+  border:2px solid var(--neon);border-radius:18px;
+  box-shadow:0 0 25px var(--neon);
+  text-shadow:0 0 15px var(--neon)
+}
+.box{
+  border:2px solid var(--neon);
+  border-radius:20px;padding:20px;
+  background:rgba(0,0,0,.85);
+  box-shadow:0 0 25px var(--neon),inset 0 0 20px #003
+}
+.label{margin-top:12px}
+.display{
+  width:100%;padding:15px;margin-top:6px;
+  background:#000;border:2px solid var(--neon);
+  border-radius:12px;color:var(--neon);
+  font-size:20px;text-align:right;
+  box-shadow:inset 0 0 12px var(--neon)
+}
+.display.active{
+  border-color:#00ffff;
+  box-shadow:0 0 20px #00ffff,inset 0 0 15px #00ffff
+}
+.slider-wrap{margin-top:10px;text-align:center}
+.slider-value{font-size:20px;margin-bottom:8px;text-shadow:0 0 10px var(--neon)}
+input[type=range]{
+  -webkit-appearance:none;width:100%;height:8px;
+  background:#000;border:2px solid var(--neon);
+  border-radius:10px;box-shadow:0 0 15px var(--neon)
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:22px;height:22px;
+  background:var(--neon);border-radius:50%;
+  box-shadow:0 0 20px var(--neon);cursor:pointer
+}
+.result{margin-top:15px;text-align:center;font-size:20px;text-shadow:0 0 12px var(--neon)}
+.keypad{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:14px
+}
+button{
+  background:#000;border:2px solid var(--neon);
+  color:var(--neon);border-radius:14px;
+  font-size:22px;padding:18px;cursor:pointer;
+  box-shadow:0 0 14px var(--neon);outline:none
+}
+button:active{
+  background:var(--neon);color:#000;
+  box-shadow:0 0 30px var(--neon);
+  transform:scale(.96)
+}
+.clear{
+  border-color:var(--red);color:var(--red);
+  box-shadow:0 0 14px var(--red)
+}
+.clear:active{background:var(--red);color:#000}
+.equal{
+  grid-column:span 2;
+  background:var(--neon);color:#000;
+  font-size:26px;box-shadow:0 0 30px var(--neon)
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<header>Trip Expense Calculator</header>
+
+<div class="box">
+  <div class="label">Total Distance (KM)</div>
+  <input id="km" class="display" readonly onclick="setField('km')">
+
+  <div class="label">Mileage (KM / L)</div>
+  <div class="slider-wrap">
+    <div class="slider-value"><span id="milVal">15</span> KM/L</div>
+    <input type="range" min="1" max="40" value="15"
+      oninput="updateMileage(this.value); sliderVibrate();">
+  </div>
+
+  <div class="label">Fuel Price (₹ / L)</div>
+  <input id="rate" class="display" readonly onclick="setField('rate')">
+
+  <div id="output" class="result"></div>
+</div>
+
+<div class="box">
+  <div class="keypad">
+    <button class="clear" onclick="clearAll()">C</button>
+    <button onclick="back()">⌫</button>
+    <button onclick="press('.')">.</button>
+
+    <button onclick="press('7')">7</button>
+    <button onclick="press('8')">8</button>
+    <button onclick="press('9')">9</button>
+
+    <button onclick="press('4')">4</button>
+    <button onclick="press('5')">5</button>
+    <button onclick="press('6')">6</button>
+
+    <button onclick="press('1')">1</button>
+    <button onclick="press('2')">2</button>
+    <button onclick="press('3')">3</button>
+
+    <button onclick="press('0')">0</button>
+    <button class="equal" onclick="calculate()">=</button>
+  </div>
+</div>
+
+</div>
+
+<script>
+let activeInput=null,mileage=15,lastVibe=0;
+function vibrate(ms){if(navigator.vibrate)navigator.vibrate(ms)}
+function setField(id){
+  document.querySelectorAll(".display").forEach(e=>e.classList.remove("active"));
+  activeInput=document.getElementById(id);
+  activeInput.classList.add("active");
+  vibrate(25)
+}
+function press(v){if(activeInput){activeInput.value+=v;vibrate(20)}}
+function back(){if(activeInput){activeInput.value=activeInput.value.slice(0,-1);vibrate(20)}}
+function clearAll(){km.value="";rate.value="";output.innerText="";vibrate(40)}
+function calculate(){
+  let k=parseFloat(km.value),r=parseFloat(rate.value);
+  if(k&&r){
+    let f=(k/mileage).toFixed(2),c=(f*r).toFixed(2);
+    output.innerHTML=`Fuel Required: <b>${f} L</b><br>Total Expense: <b>₹ ${c}</b>`
+  }
+  vibrate(50)
+}
+function updateMileage(v){mileage=v;milVal.innerText=v}
+function sliderVibrate(){
+  let n=Date.now();
+  if(n-lastVibe>80){vibrate(15);lastVibe=n}
+}
+
+/* Service Worker Register */
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("service-worker.js");
+}
+</script>
+
+</body>
+</html>
