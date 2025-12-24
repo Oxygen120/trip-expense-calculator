@@ -1,0 +1,9 @@
+{
+  "name": "Trip Expense Calculator",
+  "short_name": "TripCalc",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#00ffcc",
+  "orientation": "portrait"
+}
